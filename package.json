@@ -11,6 +11,7 @@
     },
     "main": "dist/index.js",
     "scripts": {
-        "start": "tsc & node dist/index.js"
-    }
+        "start": "node src/index.js"
+    },
+    "type": "module"
 }
