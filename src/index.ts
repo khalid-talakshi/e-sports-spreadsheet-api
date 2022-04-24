@@ -3,7 +3,7 @@ import {google} from "googleapis"
 import dotenv from "dotenv"
 
 const app = express();
-const port = 8080; // default port to listen
+const port = process.env.PORT || 8080; // default port to listen
 dotenv.config()
 
 // define a route handler for the default home page
