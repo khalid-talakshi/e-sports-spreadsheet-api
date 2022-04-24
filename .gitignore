@@ -1,0 +1,7 @@
+dist/
+node_modules/
+secrets.json
+.env
+yarn-error.log
+yarn.lock
+credentials.json
