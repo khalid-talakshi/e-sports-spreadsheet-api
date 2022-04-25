@@ -11,6 +11,7 @@
     },
     "main": "dist/index.js",
     "scripts": {
+        "postinstall": "(grep GOOGLE_CREDENTIALS .env | cut -d '=' -f2,4) > credentials.json",
         "start": "node src/index.js"
     },
     "type": "module"
