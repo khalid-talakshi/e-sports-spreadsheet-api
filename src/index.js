@@ -2,6 +2,7 @@ import express from "express";
 import { google } from "googleapis"
 import dotenv from "dotenv"
 import cors from "cors"
+import * as fs from 'fs'
 
 const app = express();
 const port = process.env.PORT || 8080; // default port to listen
@@ -30,44 +31,60 @@ app.get("/", (req, res) => {
 });
 
 app.get("/schedule", async(req, res) => {
-    const sheets = google.sheets({ version: 'v4', auth });
+    const cachedResponse = JSON.parse(fs.readFileSync("schedule.json"))
 
-    const range = `Sheet1!A1:E18`;
+    const remoteDate = (await getLastModifiedDate()).data["modifiedTime"]
 
-    const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: process.env.SHEET_ID,
-        range,
-    });
+    console.log(cachedResponse["lastModifiedDate"])
+    console.log(remoteDate)
 
-    const lastModifiedDate = await getLastModifiedDate()
+    if (cachedResponse["lastModifiedDate"] >= remoteDate) {
+        console.log("sending cached response")
+        res.send(cachedResponse)
+    } else {
+        console.log("fetching new schedule")
 
-    const values = response.data.values
+        const sheets = google.sheets({ version: 'v4', auth });
 
-    let day1;
-    let day2;
-    let day3;
-    let result = { "friday": {}, "saturday": {} }
+        const range = `Sheet1!A1:E18`;
 
-    for (let i = 0; i < values.length; i++) {
-        if (i == 0) {
-            // day row
-            continue;
-        } else if (i == 1) {
-            // stream row
-            continue;
-        } else {
-            // standard time row
-            const time = values[i][0]
-            const stream1Friday = values[i][1] || ""
-            const stream2Friday = values[i][2] || ""
-            const stream1Saturday = values[i][3] || ""
-            const stream2Saturday = values[i][4] || ""
-            result["friday"] = {...result["friday"], [time]: [stream1Friday, stream2Friday] }
-            result["saturday"] = {...result["saturday"], [time]: [stream1Saturday, stream2Saturday] }
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: process.env.SHEET_ID,
+            range,
+        });
+
+        const values = response.data.values
+
+        let day1;
+        let day2;
+        let day3;
+        let result = { "friday": {}, "saturday": {} }
+
+        for (let i = 0; i < values.length; i++) {
+            if (i == 0) {
+                // day row
+                continue;
+            } else if (i == 1) {
+                // stream row
+                continue;
+            } else {
+                // standard time row
+                const time = values[i][0]
+                const stream1Friday = values[i][1] || ""
+                const stream2Friday = values[i][2] || ""
+                const stream1Saturday = values[i][3] || ""
+                const stream2Saturday = values[i][4] || ""
+                result["friday"] = {...result["friday"], [time]: [stream1Friday, stream2Friday] }
+                result["saturday"] = {...result["saturday"], [time]: [stream1Saturday, stream2Saturday] }
+            }
         }
-    }
 
-    res.send({ data: result, "lastModifiedDate": lastModifiedDate.data["modifiedTime"] })
+        const respone = { data: result, "lastModifiedDate": remoteDate }
+
+        fs.writeFileSync("schedule.json", JSON.stringify(respone))
+
+        res.send({ data: result, "lastModifiedDate": remoteDate })
+    }
 })
 
 app.get("/modifiedDate", async(req, res) => {

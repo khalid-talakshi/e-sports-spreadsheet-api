@@ -6,3 +6,4 @@ yarn-error.log
 yarn.lock
 credentials.json
 google-credentials.json
+schedule.json
