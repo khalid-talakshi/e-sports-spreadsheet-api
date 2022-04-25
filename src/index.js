@@ -31,14 +31,16 @@ app.get("/", (req, res) => {
 });
 
 app.get("/schedule", async(req, res) => {
-    const cachedResponse = JSON.parse(fs.readFileSync("schedule.json"))
+
+    let cachedResponse = null
+
+    if (fs.existsSync("schedule.json")) {
+        cachedResponse = JSON.parse(fs.readFileSync("schedule.json"))
+    }
 
     const remoteDate = (await getLastModifiedDate()).data["modifiedTime"]
 
-    console.log(cachedResponse["lastModifiedDate"])
-    console.log(remoteDate)
-
-    if (cachedResponse["lastModifiedDate"] >= remoteDate) {
+    if (cachedResponse && cachedResponse["lastModifiedDate"] >= remoteDate) {
         console.log("sending cached response")
         res.send(cachedResponse)
     } else {
