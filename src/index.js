@@ -1,10 +1,14 @@
 import express from "express";
 import { google } from "googleapis"
 import dotenv from "dotenv"
+import cors from "cors"
 
 const app = express();
 const port = process.env.PORT || 8080; // default port to listen
 dotenv.config()
+
+
+app.use(cors())
 
 // define a route handler for the default home page
 app.get("/", (req, res) => {
@@ -30,6 +34,7 @@ app.get("/schedule", async(req, res) => {
     res.send({ data: response.data.values[0] })
 
 })
+
 
 // start the Express server
 app.listen(port, () => {
