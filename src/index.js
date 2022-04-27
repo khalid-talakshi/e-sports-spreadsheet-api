@@ -98,23 +98,40 @@ app.get("/modifiedDate", async(req, res) => {
 app.get("/standings", async(req, res) => {
     const group1Range = `Sheet2!A1:G6`;
     const group2Range = `Sheet2!A8:G13`
+    const localFile = "standings.json"
 
-    const response = await sheets.spreadsheets.values.batchGet({
-        spreadsheetId: process.env.SHEET_ID,
-        ranges: [group1Range, group2Range],
-    });
+    let cachedResponse = null
 
-    const values = response.data.valueRanges.map((item) => {
-        const intValues = item.values
-        const groupName = item.values[0][0]
-        return {
-            [groupName]: intValues.slice(1)
-        }
-    })
+    if (fs.existsSync(localFile)) {
+        cachedResponse = JSON.parse(fs.readFileSync(localFile))
+    }
 
-    console.log(values)
+    const remoteDate = (await getLastModifiedDate()).data["modifiedTime"]
 
-    res.send(values)
+    if (cachedResponse && cachedResponse["lastModifiedDate"] >= remoteDate) {
+        console.log("sending cached response")
+        res.send(cachedResponse)
+    } else {
+        console.log("fetching new standings")
+        const response = await sheets.spreadsheets.values.batchGet({
+            spreadsheetId: process.env.SHEET_ID,
+            ranges: [group1Range, group2Range],
+        });
+
+        const values = response.data.valueRanges.map((item) => {
+            const intValues = item.values
+            const groupName = item.values[0][0]
+            return {
+                [groupName]: intValues.slice(1)
+            }
+        })
+
+        const respone = { data: values, "lastModifiedDate": remoteDate }
+
+        fs.writeFileSync(localFile, JSON.stringify(respone))
+
+        res.send(respone)
+    }
 })
 
 // start the Express server
