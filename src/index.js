@@ -96,8 +96,8 @@ app.get("/modifiedDate", async(req, res) => {
 })
 
 app.get("/standings", async(req, res) => {
-    const group1Range = `Sheet2!A1:G6`;
-    const group2Range = `Sheet2!A8:G13`
+    const group1Range = `Sheet2!A1:I8`;
+    const group2Range = `Sheet2!A10:I25`
     const localFile = "standings.json"
 
     let cachedResponse = null
