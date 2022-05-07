@@ -47,7 +47,7 @@ app.get("/schedule", async(req, res) => {
     } else {
         console.log("fetching new schedule")
 
-        const range = `Sheet1!A1:E18`;
+        const range = `Sheet1!A1:G10`;
 
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: process.env.SHEET_ID,
@@ -73,10 +73,13 @@ app.get("/schedule", async(req, res) => {
                 const time = values[i][0]
                 const stream1Friday = values[i][1] || ""
                 const stream2Friday = values[i][2] || ""
+                const stream3Friday = values[i][3] || ""
+                const stream4Friday = values[i][4] || ""
+                const stream5Friday = values[i][5] || ""
+                const stream6Friday = values[i][6] || ""
                 const stream1Saturday = values[i][3] || ""
                 const stream2Saturday = values[i][4] || ""
-                result["friday"] = {...result["friday"], [time]: [stream1Friday, stream2Friday] }
-                result["saturday"] = {...result["saturday"], [time]: [stream1Saturday, stream2Saturday] }
+                result["friday"] = {...result["friday"], [time]: [stream1Friday, stream2Friday, stream3Friday, stream4Friday, stream5Friday, stream6Friday] }
             }
         }
 
