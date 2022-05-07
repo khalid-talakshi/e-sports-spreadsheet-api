@@ -135,6 +135,34 @@ app.get("/standings", async(req, res) => {
     }
 })
 
+app.get("/playoffs", async(req, res) => {
+    const xboxPlayoffRange = `Sheet9!A1:D6`
+
+    const response = await sheets.spreadsheets.values.batchGet({
+        spreadsheetId: process.env.SHEET_ID,
+        ranges: [xboxPlayoffRange],
+    });
+
+    const responsJSON = response.data.valueRanges.map((item) => {
+        const values = item.values
+        const playoffRangeName = values[0][0]
+        const playoffSeeds = values.slice(2)
+        let playoffSeedFormatted = {}
+        playoffSeeds.map((item) => {
+            if (playoffSeedFormatted[item[0]] == undefined) {
+                playoffSeedFormatted[item[0]] = [{ roundName: item[1], team1: item[2], team2: item[3] }]
+            } else {
+                playoffSeedFormatted[item[0]] = [...playoffSeedFormatted[item[0]], { roundName: item[1], team1: item[2], team2: item[3] }]
+            }
+        })
+        return {
+            [playoffRangeName]: playoffSeedFormatted
+        }
+    })
+
+    res.send(responsJSON[0])
+})
+
 // start the Express server
 app.listen(port, () => {
     console.log(`server started at http://localhost:${ port }`);
