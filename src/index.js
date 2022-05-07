@@ -55,6 +55,7 @@ app.get("/schedule", async(req, res) => {
         });
 
         const values = response.data.values
+        console.log(values)
 
         let day1;
         let day2;
@@ -64,9 +65,6 @@ app.get("/schedule", async(req, res) => {
         for (let i = 0; i < values.length; i++) {
             if (i == 0) {
                 // day row
-                continue;
-            } else if (i == 1) {
-                // stream row
                 continue;
             } else {
                 // standard time row
