@@ -137,13 +137,17 @@ app.get("/standings", async(req, res) => {
 
 app.get("/playoffs", async(req, res) => {
     const xboxPlayoffRange = `Sheet9!A1:D6`
+    const playstationPlayoffRange = `Sheet9!A7:D15`
 
     const response = await sheets.spreadsheets.values.batchGet({
         spreadsheetId: process.env.SHEET_ID,
-        ranges: [xboxPlayoffRange],
+        ranges: [xboxPlayoffRange, playstationPlayoffRange],
     });
 
+    let obj = {}
+
     const responsJSON = response.data.valueRanges.map((item) => {
+        console.log(item)
         const values = item.values
         const playoffRangeName = values[0][0]
         const playoffSeeds = values.slice(2)
@@ -155,9 +159,9 @@ app.get("/playoffs", async(req, res) => {
                 playoffSeedFormatted[item[0]] = [...playoffSeedFormatted[item[0]], { roundName: item[1], team1: item[2], team2: item[3] }]
             }
         })
-        return {
-            [playoffRangeName]: playoffSeedFormatted
-        }
+        obj[playoffRangeName] = playoffSeedFormatted
+        console.log(obj)
+        return obj
     })
 
     res.send(responsJSON[0])
